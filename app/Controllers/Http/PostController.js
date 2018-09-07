@@ -3,7 +3,6 @@
 const Post = use('App/Models/Post')
 
 class PostController {
-
   async index ({ response }) {
     let posts = await Post.all()
     return response.json(posts)
@@ -15,7 +14,6 @@ class PostController {
   }
 
   async store ({request, response}) {
-
     const params = request.only(['title', 'illustration', 'content', 'lang', 'draft'])
     const post = new Post()
     post.title = params.title
@@ -29,7 +27,6 @@ class PostController {
   }
 
   async update ({params, request, response}) {
-
     const post = await Post.find(params.id)
     post.title = params.title
     post.illustration = params.illustration
