@@ -4,8 +4,8 @@ const User = use('App/Models/User')
 
 class UserController {
   async show ({ response }) {
-    // const user = await User.find(1)
-    return response.status(200).json('Bonjour')
+    const user = await User.find(1)
+    return response.status(200).json(user)
   }
 
   async register ({request, response}) {
@@ -14,6 +14,7 @@ class UserController {
       return response.status(403).json('A user is already present in the database')
     } else {
       const params = request.all()
+
       let fields = [
         'first_name',
         'last_name',
@@ -28,6 +29,7 @@ class UserController {
         'email',
         'password'
       ]
+
       const user = new User()
       fields.forEach((element) => {
         if (params[element]) {
@@ -53,7 +55,8 @@ class UserController {
   }
 
   async logout ({auth, response}) {
-
+    await auth.logout()
+    return response.status(200).json('logged_out')
   }
 }
 

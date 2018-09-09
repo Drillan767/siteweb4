@@ -3,16 +3,18 @@
 const Post = use('App/Models/Post')
 const Helpers = use('Helpers')
 const Env = use('Env')
+const { validate } = use('Validator')
 const FIELDS = ['title', 'content', 'lang', 'draft']
 
 class PostController {
   async index ({ response }) {
-    let posts = await Post.all()
-    return response.json(posts)
+    const posts = await Post.all()
+    console.log(posts)
+    return response.status(200).json(posts)
   }
 
   async show ({params, response}) {
-    const post = await Post.find(params.id)
+    const post = await Post.query().where('slug', params.slug).first()
     return response.json(post)
   }
 
@@ -23,6 +25,17 @@ class PostController {
       allowedExtensions: ['jpg', 'png', 'jpeg'],
       size: '3mb'
     })
+
+    const validation = await validate(request.all(), {
+      title: 'required|min:5|max:60',
+      body: 'required|min:30',
+      lang: 'required|min:30',
+      draft: 'required|integer|min:30'
+    })
+
+    if (validation.fails()) {
+      return response.status(400).json(validation.messages())
+    }
 
     const post = new Post()
 

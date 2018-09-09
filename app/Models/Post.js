@@ -12,13 +12,5 @@ class Post extends Model {
       disableUpdates: false
     })
   }
-
-  static get table () {
-    return 'posts'
-  }
-
-  static get primaryKey () {
-    return 'id'
-  }
 }
 module.exports = Post
