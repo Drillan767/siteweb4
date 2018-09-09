@@ -15,7 +15,6 @@ class UserController {
     } else {
       const params = request.all()
       let fields = [
-        'username',
         'first_name',
         'last_name',
         'profile_pic',
@@ -39,6 +38,22 @@ class UserController {
       await user.save()
       return response.status(201).json(user)
     }
+  }
+
+  async login ({request, auth, session, response}) {
+    const {email, password, remember} = request.all()
+    const user = await User.query().where('email', email).first()
+
+    if (user) {
+      const logged = await auth.remember(remember).attempt(user.email, password)
+      return response.status(200).json(logged)
+    } else {
+      return response.status(404).json(null)
+    }
+  }
+
+  async logout ({auth, response}) {
+
   }
 }
 

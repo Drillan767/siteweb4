@@ -6,12 +6,12 @@ class PostSchema extends Schema {
   up () {
     this.create('posts', (table) => {
       table.increments()
-      table.string('title')
-      table.text('content')
-      table.string('illustration')
-      table.string('lang')
-      table.string('slug')
-      table.boolean('draft')
+      table.string('title').notNullable().unique()
+      table.text('content').notNullable()
+      table.string('illustration').notNullable()
+      table.string('lang').notNullable()
+      table.string('slug').notNullable()
+      table.boolean('draft').notNullable()
 
       table.timestamps()
     })
