@@ -13,4 +13,5 @@ Route.group(() => {
   Route.get('user', 'UserController.show')
   Route.post('login', 'UserController.login')
   Route.delete('logout', 'UserController.logout')
+  Route.get('logged_in', 'UserController.logged')
 }).prefix('api/v1')

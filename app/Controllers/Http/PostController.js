@@ -9,7 +9,6 @@ const FIELDS = ['title', 'content', 'lang', 'draft']
 class PostController {
   async index ({ response }) {
     const posts = await Post.all()
-    console.log(posts)
     return response.status(200).json(posts)
   }
 

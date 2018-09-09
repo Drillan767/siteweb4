@@ -42,6 +42,15 @@ class UserController {
     }
   }
 
+  async logged ({auth, response}) {
+    try {
+      await auth.getUser()
+      return response.status(200).json(true)
+    } catch (e) {
+      response.status(200).json(false)
+    }
+  }
+
   async login ({request, auth, session, response}) {
     const {email, password, remember} = request.all()
     const user = await User.query().where('email', email).first()
