@@ -56,7 +56,7 @@ class UserController {
     const user = await User.query().where('email', email).first()
 
     if (user) {
-      const logged = await auth.remember(remember).attempt(user.email, password)
+      const logged = await auth.attempt(user.email, password)
       return response.status(200).json(logged)
     } else {
       return response.status(404).json(null)
