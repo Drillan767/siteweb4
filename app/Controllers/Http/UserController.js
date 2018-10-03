@@ -44,7 +44,7 @@ class UserController {
 
   async logged ({auth, response}) {
     try {
-      await auth.getUser()
+      await auth.check()
       return response.status(200).json(true)
     } catch (e) {
       response.status(200).json(false)
@@ -52,11 +52,13 @@ class UserController {
   }
 
   async login ({request, auth, session, response}) {
-    const {email, password, remember} = request.all()
+    const {email, password} = request.all()
     const user = await User.query().where('email', email).first()
 
     if (user) {
-      const logged = await auth.attempt(user.email, password)
+      const logged = await auth
+        .withRefreshToken()
+        .attempt(user.email, password)
       return response.status(200).json(logged)
     } else {
       return response.status(404).json(null)
