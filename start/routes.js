@@ -10,6 +10,7 @@ Route.group(() => {
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
 
   Route.post('user', 'UserController.register')
+  Route.post('user/token/refresh', 'UserController.refreshToken')
   Route.get('user', 'UserController.show')
   Route.post('login', 'UserController.login')
   Route.delete('logout', 'UserController.logout')
