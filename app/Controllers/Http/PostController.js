@@ -18,22 +18,22 @@ class PostController {
   }
 
   async store ({request, response}) {
-    const params = request.only(FIELDS)
+    const params = request.body
     const illustration = request.file('illustration', {
       types: ['image'],
       allowedExtensions: ['jpg', 'png', 'jpeg'],
       size: '3mb'
     })
 
-    const validation = await validate(request.all(), {
+    const validation = await validate(params, {
       title: 'required|min:5|max:60',
-      body: 'required|min:30',
-      lang: 'required|min:30',
-      draft: 'required|integer|min:30'
+      content: 'required|min:30',
+      lang: 'required',
+      draft: 'required'
     })
 
     if (validation.fails()) {
-      return response.status(400).json(validation.messages())
+      return response.status(401).json(validation.messages())
     }
 
     const post = new Post()

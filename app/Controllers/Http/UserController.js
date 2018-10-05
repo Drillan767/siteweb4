@@ -42,10 +42,10 @@ class UserController {
 
   async logged ({auth, response}) {
     try {
-      const { email, first_name, last_name } = await auth.getUser()
-      return { email, first_name, last_name }
+      const user = await auth.getUser()
+      return user
     } catch (e) {
-      response.send('Missing or invalid jwt token');
+      response.send('Missing or invalid jwt token')
     }
   }
 
@@ -96,14 +96,13 @@ class UserController {
       refresh_token: 'required'
     }
 
-    const refresh_token = request.only(['refresh_token'])
+    const { refresh_token } = request.only(['refresh_token'])
     const validation = await validate({ refresh_token }, rules)
     const decrypted = Encryption.decrypt(refresh_token)
 
     if (!validation.fails()) {
       try {
-        const token = Token.findBy('token', decrypted)
-
+        const token = await Token.findBy('token', decrypted)
         if (token) {
           token.delete()
           response.status(200).send({status: 'ok'})
