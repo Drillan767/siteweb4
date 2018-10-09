@@ -5,7 +5,7 @@ const Route = use('Route')
 Route.group(() => {
   Route.post('post', 'PostController.store').middleware('auth:jwt')
   Route.get('posts', 'PostController.index')
-  Route.get('post/:id', 'PostController.show')
+  Route.get('post/:slug', 'PostController.show')
   Route.put('post/:id', 'PostController.update').middleware('auth')
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
 
