@@ -8,6 +8,7 @@ Route.group(() => {
   Route.get('post/:slug', 'PostController.show')
   Route.put('post/:id', 'PostController.update').middleware('auth')
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
+  Route.post('/settings', 'SettingContrller.edit').middleware('auth')
 
   Route.post('user', 'UserController.register')
   Route.post('user/token/refresh', 'UserController.refreshToken')

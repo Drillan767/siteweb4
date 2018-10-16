@@ -13,7 +13,6 @@ class PostController {
 
   async show ({params, response}) {
     const post = await Post.query().where('slug', params.slug).first()
-    console.log(post)
     if (post) {
       return response.status(200).send(post)
     } else {

@@ -11,6 +11,7 @@ class UserSchema extends Schema {
       table.date('birthday')
       table.string('facebook')
       table.string('profile_pic')
+      table.string('about')
       table.string('twitter')
       table.string('viadeo')
       table.string('linkedin')
