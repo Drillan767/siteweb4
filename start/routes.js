@@ -7,7 +7,15 @@ Route.group(() => {
   Route.get('posts', 'PostController.index')
   Route.get('post/:slug', 'PostController.show')
   Route.put('post/:id', 'PostController.update').middleware('auth')
+  Route.post('post/publish', 'PostController.publish').middleware('auth')
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
+
+  Route.post('tag', 'TagController.store').middleware('auth')
+  Route.put('tag/:id', 'TagController.update').middleware('auth')
+  Route.get('tags', 'TagController.all')
+  Route.get('tag/:id', 'TagController.show')
+  Route.delete('tag/:id', 'TagController.delete')
+
   Route.post('/settings', 'SettingContrller.edit').middleware('auth')
 
   Route.post('user', 'UserController.register')

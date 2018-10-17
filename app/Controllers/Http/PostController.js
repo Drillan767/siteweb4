@@ -21,14 +21,14 @@ class PostController {
   }
 
   async store ({request, response}) {
-    const params = request.body
-    const illustration = request.file('illustration', {
+    let illustration = null
+    const image = request.file('illustration', {
       types: ['image'],
       allowedExtensions: ['jpg', 'png', 'jpeg'],
       size: '3mb'
     })
 
-    const validation = await validateAll(params, {
+    const validation = await validateAll(request.post(), {
       title: 'required|min:5|max:60',
       tags: 'required|min:5|max:60',
       content: 'required|min:30',
@@ -43,19 +43,15 @@ class PostController {
       'illustration.required': 'The field "illustration" is required'
     })
 
-    const post = new Post()
-
-    // Handling the file upload, setting up the right directory
-
-    if (illustration) {
+    if (image) {
       const latest = await Post.last()
       const id = latest ? latest.id + 1 : 1
-      await illustration.move(Helpers.publicPath('articles/' + id))
+      await image.move(Helpers.publicPath('articles/' + id))
 
-      if (!illustration.moved()) {
-        return response.status(401).json([illustration.error()])
+      if (!image.moved()) {
+        return response.status(401).json([image.error()])
       } else {
-        post.illustration = `${Env.get('APP_URL')}/articles/${id}/${illustration.clientName}`
+        illustration = `${Env.get('APP_URL')}/articles/${id}/${image.clientName}`
       }
     } else {
       return response.status(401).json([{field: 'illustration', message: 'The field "illustration" is required'}])
@@ -65,10 +61,15 @@ class PostController {
       return response.status(401).json(validation.messages())
     }
 
-    post.title = params.title
-    post.content = params.content
-    post.lang = params.lang
-    post.draft = params.draft
+    const {title, content, lang, draft} = request.post()
+    let { tags } = request.post()
+    tags = JSON.parse(tags)
+    const post = await Post.create({title, content, lang, draft, illustration})
+
+    if (tags && tags > 0) {
+      await post.tags().sync(tags)
+      post.tags = await post.tags().fetch()
+    }
 
     await post.save()
     return response.status(201).json(post)
@@ -93,6 +94,15 @@ class PostController {
     } else {
       return response.status(204).json(null)
     }
+  }
+
+  async publish ({params, request, response}) {
+    const param = request.only(['id'])
+    const post = await Post.find(param.id)
+    post.draft = !post.draft
+    await post.save()
+
+    return response.status(200).json(post)
   }
 }
 

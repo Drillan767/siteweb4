@@ -12,5 +12,9 @@ class Post extends Model {
       disableUpdates: false
     })
   }
+
+  tags () {
+    return this.belongsToMany('App/Models/Tag')
+  }
 }
 module.exports = Post
