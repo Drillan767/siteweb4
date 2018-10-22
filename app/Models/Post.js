@@ -14,7 +14,9 @@ class Post extends Model {
   }
 
   tags () {
-    return this.belongsToMany('App/Models/Tag')
+    return this
+      .belongsToMany('App/Models/Tag')
+      .pivotTable('post_tag')
   }
 }
 module.exports = Post

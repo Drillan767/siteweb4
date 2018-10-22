@@ -23,8 +23,8 @@ class TagController {
     const tag = await Tag.find(params.id)
     const {name, description_en, description_fr} = request.all()
     tag.name = name || tag.name
-    tag.name = description_en || tag.description_en
-    tag.name = description_fr || tag.description_fr
+    tag.description_en = description_en || tag.description_en
+    tag.description_fr = description_fr || tag.description_fr
 
     await tag.save()
     return response.status(200).send(tag)

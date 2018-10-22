@@ -2,18 +2,20 @@
 
 const Post = use('App/Models/Post')
 const Helpers = use('Helpers')
+const Drive = use('Drive')
 const Env = use('Env')
 const { validateAll } = use('Validator')
 
 class PostController {
   async index ({ response }) {
-    const posts = await Post.all()
+    const posts = await Post.query().with('tags').fetch()
     return response.status(200).json(posts)
   }
 
   async show ({params, response}) {
-    const post = await Post.query().where('slug', params.slug).first()
+    const post = await Post.query().with('tags').where('slug', params.slug).first()
     if (post) {
+      post.tags = await post.tags().fetch()
       return response.status(200).send(post)
     } else {
       return response.status(404).send(null)
@@ -25,12 +27,12 @@ class PostController {
     const image = request.file('illustration', {
       types: ['image'],
       allowedExtensions: ['jpg', 'png', 'jpeg'],
-      size: '3mb'
+      size: '10mb'
     })
 
-    const validation = await validateAll(request.post(), {
+    const validation = await validateAll(request.all(), {
       title: 'required|min:5|max:60',
-      tags: 'required|min:5|max:60',
+      tags: 'required',
       content: 'required|min:30',
       lang: 'required',
       draft: 'required'
@@ -61,27 +63,45 @@ class PostController {
       return response.status(401).json(validation.messages())
     }
 
-    const {title, content, lang, draft} = request.post()
-    let { tags } = request.post()
-    tags = JSON.parse(tags)
+    const {title, content, lang, draft} = request.all()
     const post = await Post.create({title, content, lang, draft, illustration})
-
-    if (tags && tags > 0) {
-      await post.tags().sync(tags)
-      post.tags = await post.tags().fetch()
+    const tags = request.input('tags').split(',').map(Number)
+    if (tags && tags.length > 0) {
+      await post.tags().attach(tags)
+      // post.tags = await post.tags().fetch()
     }
 
-    await post.save()
     return response.status(201).json(post)
   }
 
   async update ({params, request, response}) {
     const post = await Post.find(params.id)
+    let illustration = null
     post.title = params.title
-    post.illustration = params.illustration
     post.content = params.content
     post.lang = params.lang
     post.draft = params.draft
+
+    const image = request.file('illustration', {
+      types: ['image'],
+      allowedExtensions: ['jpg', 'png', 'jpeg'],
+      size: '10mb'
+    })
+
+    if (image) {
+      const file = post.illustration.replace(Env.get('APP_URL'), '')
+      await Drive.delete(Helpers.publicPath(file))
+      await image.move(Helpers.publicPath(`articles/${post.id}`))
+
+      if (!image.moved()) {
+        return response.status(401).json([image.error()])
+      } else {
+        illustration = `${Env.get('APP_URL')}/articles/${post.id}/${image.clientName}`
+      }
+    }
+
+    post.illustration = illustration || post.illustration
+
     await post.save()
 
     return response.status(200).json(post)
@@ -92,7 +112,9 @@ class PostController {
     if (!post) {
       return response.status(404).json(null)
     } else {
-      return response.status(204).json(null)
+      await post.tags().detach()
+      await post.delete()
+      return response.status(200).json(null)
     }
   }
 

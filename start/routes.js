@@ -14,7 +14,7 @@ Route.group(() => {
   Route.put('tag/:id', 'TagController.update').middleware('auth')
   Route.get('tags', 'TagController.all')
   Route.get('tag/:id', 'TagController.show')
-  Route.delete('tag/:id', 'TagController.delete')
+  Route.delete('tag/:id', 'TagController.delete').middleware('auth')
 
   Route.post('/settings', 'SettingContrller.edit').middleware('auth')
 

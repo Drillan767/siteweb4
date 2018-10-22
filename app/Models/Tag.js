@@ -4,7 +4,9 @@ const Model = use('Model')
 
 class Tag extends Model {
   posts () {
-    return this.belongsToMany('App/Models/Post')
+    return this
+      .belongsToMany('App/Models/Post')
+      .pivotTable('post_tag')
   }
 
   project () {
