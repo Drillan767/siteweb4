@@ -6,7 +6,7 @@ Route.group(() => {
   Route.post('post', 'PostController.store').middleware('auth:jwt')
   Route.get('posts', 'PostController.index')
   Route.get('post/:slug', 'PostController.show')
-  Route.put('post/:id', 'PostController.update').middleware('auth')
+  Route.put('post/:slug', 'PostController.update').middleware('auth')
   Route.post('post/publish', 'PostController.publish').middleware('auth')
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
 

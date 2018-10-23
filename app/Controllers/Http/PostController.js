@@ -75,12 +75,13 @@ class PostController {
   }
 
   async update ({params, request, response}) {
-    const post = await Post.find(params.id)
+    const post = await Post.query().where('slug', params.slug).first()
     let illustration = null
-    post.title = params.title
-    post.content = params.content
-    post.lang = params.lang
-    post.draft = params.draft
+    const { title, content, draft, lang } = request.all()
+    post.title = title || post.title
+    post.content = content || post.content
+    post.lang = lang || post.lang
+    post.draft = draft || post.draft
 
     const image = request.file('illustration', {
       types: ['image'],
@@ -112,9 +113,9 @@ class PostController {
     if (!post) {
       return response.status(404).json(null)
     } else {
-      await post.tags().detach()
-      await post.delete()
-      return response.status(200).json(null)
+      /* await post.tags().detach()
+      await post.delete() */
+      return response.status(200).json('ok')
     }
   }
 
