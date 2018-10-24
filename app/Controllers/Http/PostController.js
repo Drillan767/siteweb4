@@ -23,7 +23,7 @@ class PostController {
   }
 
   async store ({request, response}) {
-    let illustration = null
+    let illustration = ''
     const image = request.file('illustration', {
       types: ['image'],
       allowedExtensions: ['jpg', 'png', 'jpeg'],
@@ -45,20 +45,6 @@ class PostController {
       'illustration.required': 'The field "illustration" is required'
     })
 
-    if (image) {
-      const latest = await Post.last()
-      const id = latest ? latest.id + 1 : 1
-      await image.move(Helpers.publicPath('articles/' + id))
-
-      if (!image.moved()) {
-        return response.status(401).json([image.error()])
-      } else {
-        illustration = `${Env.get('APP_URL')}/articles/${id}/${image.clientName}`
-      }
-    } else {
-      return response.status(401).json([{field: 'illustration', message: 'The field "illustration" is required'}])
-    }
-
     if (validation.fails()) {
       return response.status(401).json(validation.messages())
     }
@@ -68,7 +54,18 @@ class PostController {
     const tags = request.input('tags').split(',').map(Number)
     if (tags && tags.length > 0) {
       await post.tags().attach(tags)
-      // post.tags = await post.tags().fetch()
+    }
+
+    if (image) {
+      await image.move(Helpers.publicPath('articles/' + id))
+
+      if (!image.moved()) {
+        return response.status(401).json([image.error()])
+      } else {
+        illustration = `${Env.get('APP_URL')}/articles/${post.id}/${image.clientName}`
+        post.illustration = illustration
+        await post.save()
+      }
     }
 
     return response.status(201).json(post)
@@ -78,6 +75,7 @@ class PostController {
     const post = await Post.query().where('slug', params.slug).first()
     let illustration = null
     const { title, content, draft, lang } = request.all()
+    const tags = request.input('tags').split(',').map(Number)
     post.title = title || post.title
     post.content = content || post.content
     post.lang = lang || post.lang
@@ -105,6 +103,9 @@ class PostController {
 
     await post.save()
 
+    await post.tags().detach()
+    await post.tags().attach(tags)
+
     return response.status(200).json(post)
   }
 
@@ -113,8 +114,8 @@ class PostController {
     if (!post) {
       return response.status(404).json(null)
     } else {
-      /* await post.tags().detach()
-      await post.delete() */
+      await post.tags().detach()
+      await post.delete()
       return response.status(200).json('ok')
     }
   }
