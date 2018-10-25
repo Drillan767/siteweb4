@@ -6,7 +6,12 @@ const Setting = use('App/Models/Setting')
 
 class SettingController {
   async get ({response}) {
-    // ...
+    const settings = await Setting.first()
+    if (settings) {
+      response.status(200).json(settings)
+    } else {
+      response.status(404).json('not found')
+    }
   }
 
   async edit ({request, response}) {
@@ -16,7 +21,7 @@ class SettingController {
       allowedExtensions: ['jpg', 'png', 'jpeg'],
       size: '10mb'
     }
-    const {facebook, twitter, linkedin, medium} = request.all()
+    const {facebook, twitter, linkedin, medium, website_name, dark_mode} = request.all()
     const landing_bg = request.file('landing_bg', imgRules)
     const article_bg = request.file('article_bg', imgRules)
     const portfolio_bg = request.file('portfolio_bg', imgRules)
@@ -28,15 +33,14 @@ class SettingController {
 
     for (const field of bgFields) {
       if (field) {
-        await field.move(Helpers.publicPath('settings'), (file) => {
-          return {
-            name: `${field}.${file.subtype}`
-          }
+        await field.move(Helpers.publicPath('settings'), {
+          name: `${field.fieldName}.${field.subtype}`,
+          overwrite: true
         })
         if (!field.moved()) {
-          errors.push(field.errors())
+          errors.push(field.error())
         } else {
-          bg[field] = `${Env.get('APP_URL')}/settings/${field.subtype}`
+          bg[field.fieldName] = `${Env.get('APP_URL')}/settings/${field.fieldName}.${field.subtype}`
         }
       }
     }
@@ -51,6 +55,8 @@ class SettingController {
         twitter: twitter,
         linkedin: linkedin,
         medium: medium,
+        website_name: website_name,
+        dark_mode: dark_mode,
         landing_bg: bg['landing_bg'],
         article_bg: bg['article_bg'],
         portfolio_bg: bg['portfolio_bg'],
@@ -64,6 +70,8 @@ class SettingController {
       setting.twitter = twitter || setting.twitter
       setting.linkedin = linkedin || setting.linkedin
       setting.medium = medium || setting.medium
+      setting.website_name = website_name || setting.website_name
+      setting.dark_mode = dark_mode || setting.dark_mode
       setting.landing_bg = bg['landing_bg'] || setting.landing_bg
       setting.article_bg = bg['article_bg'] || setting.article_bg
       setting.portfolio_bg = bg['portfolio_bg'] || setting.portfolio_bg

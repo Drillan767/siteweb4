@@ -14,6 +14,7 @@ class SettingSchema extends Schema {
       table.string('contact_bg').notNullable()
       table.string('article_bg').notNullable()
       table.string('portfolio_bg').notNullable()
+      table.string('website_name').notNullable()
       table.boolean('dark_mode')
       table.increments()
       table.timestamps()

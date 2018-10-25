@@ -16,10 +16,12 @@ Route.group(() => {
   Route.get('tag/:id', 'TagController.show')
   Route.delete('tag/:id', 'TagController.delete').middleware('auth')
 
-  Route.post('/settings', 'SettingContrller.edit').middleware('auth')
+  Route.post('/settings', 'SettingController.edit').middleware('auth')
+  Route.get('/settings', 'SettingController.get')
 
   Route.post('user', 'UserController.register')
   Route.post('user/token/refresh', 'UserController.refreshToken')
+  Route.put('user_data', 'UserController.data').middleware('auth')
   Route.get('user', 'UserController.show')
   Route.post('login', 'UserController.login')
   Route.post('logout', 'UserController.logout')

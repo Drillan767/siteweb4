@@ -57,7 +57,7 @@ class PostController {
     }
 
     if (image) {
-      await image.move(Helpers.publicPath('articles/' + id))
+      await image.move(Helpers.publicPath('articles/' + post.id))
 
       if (!image.moved()) {
         return response.status(401).json([image.error()])
