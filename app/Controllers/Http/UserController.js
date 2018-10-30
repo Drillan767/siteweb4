@@ -59,7 +59,6 @@ class UserController {
         await image.move(Helpers.publicPath('user'), {
           overwrite: true
         })
-        console.log(image.moved())
         if (!image.moved()) {
           return response.status(401).json(image.error())
         } else {

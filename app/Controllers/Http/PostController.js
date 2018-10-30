@@ -8,12 +8,28 @@ const { validateAll } = use('Validator')
 
 class PostController {
   async index ({ response }) {
-    const posts = await Post.query().with('tags').fetch()
+    const posts = await Post
+      .query()
+      .with('tags')
+      .fetch()
+    return response.status(200).json(posts)
+  }
+
+  async infinite ({request, response}) {
+    const { page, limit } = request.all()
+    const posts = await Post
+      .query()
+      .with('tags')
+      .paginate(page, limit)
     return response.status(200).json(posts)
   }
 
   async show ({params, response}) {
-    const post = await Post.query().with('tags').where('slug', params.slug).first()
+    const post = await Post
+      .query()
+      .with('tags')
+      .where('slug', params.slug)
+      .first()
     if (post) {
       post.tags = await post.tags().fetch()
       return response.status(200).send(post)

@@ -5,6 +5,7 @@ const Route = use('Route')
 Route.group(() => {
   Route.post('post', 'PostController.store').middleware('auth:jwt')
   Route.get('posts', 'PostController.index')
+  Route.post('post/infinite', 'PostController.infinite')
   Route.get('post/:slug', 'PostController.show')
   Route.put('post/:slug', 'PostController.update').middleware('auth')
   Route.post('post/publish', 'PostController.publish').middleware('auth')
@@ -17,7 +18,8 @@ Route.group(() => {
   Route.delete('tag/:id', 'TagController.delete').middleware('auth')
 
   Route.post('/settings', 'SettingController.edit').middleware('auth')
-  Route.get('/settings', 'SettingController.get')
+  Route.get('/admin_settings', 'SettingController.get').middleware('auth')
+  Route.get('/settings', 'SettingController.settings')
 
   Route.post('user', 'UserController.register')
   Route.post('user/token/refresh', 'UserController.refreshToken')

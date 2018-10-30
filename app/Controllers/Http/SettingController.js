@@ -3,6 +3,7 @@
 const Helpers = use('Helpers')
 const Env = use('Env')
 const Setting = use('App/Models/Setting')
+const User = use('App/Models/User')
 
 class SettingController {
   async get ({response}) {
@@ -81,6 +82,16 @@ class SettingController {
       await setting.save()
 
       return response.status(200).json(setting)
+    }
+  }
+
+  async settings ({response}) {
+    const user = await User.first()
+    const settings = await Setting.first()
+    if (user && settings && user !== settings) {
+      return response.status(200).send({user: user, settings: settings})
+    } else {
+      return response.status(404).json(null)
     }
   }
 }
