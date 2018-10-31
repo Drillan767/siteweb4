@@ -10,7 +10,7 @@ class PostSchema extends Schema {
       table.text('content').notNullable()
       table.string('illustration').notNullable()
       table.string('lang').notNullable()
-      table.string('slug').notNullable()
+      table.string('slug').notNullable().unique()
       table.boolean('draft').notNullable()
 
       table.timestamps()
