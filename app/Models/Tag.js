@@ -13,6 +13,10 @@ class Tag extends Model {
     return this.belongsToMany('App/Model/Portfolio')
   }
 
+  static get hidden () {
+    return ['created_at', 'updated_at', 'pivot']
+  }
+
   static boot () {
     super.boot()
 
