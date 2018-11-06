@@ -11,6 +11,9 @@ Route.group(() => {
   Route.post('post/publish', 'PostController.publish').middleware('auth')
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
 
+  Route.post('comments', 'CommentController.store')
+  Route.delete('comment', 'CommentController.destroy').middleware('auth')
+
   Route.post('tag', 'TagController.store').middleware('auth')
   Route.put('tag/:id', 'TagController.update').middleware('auth')
   Route.get('tags', 'TagController.all')
