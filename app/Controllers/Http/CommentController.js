@@ -1,52 +1,82 @@
 'use strict'
 
-/** @typedef {import('@adonisjs/framework/src/Request')} Request */
-/** @typedef {import('@adonisjs/framework/src/Response')} Response */
-/** @typedef {import('@adonisjs/framework/src/View')} View */
+const Comment = use('App/Models/Comment')
+const Mail = use('Mail')
+const { validate } = use('Validator')
 
-/**
- * Resourceful controller for interacting with comments
- */
 class CommentController {
-  /**
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async index ({request, response}) {
+  async list ({request, response}) {
+    const { post_id } = request.only(['post_id'])
+    if (post_id) {
+      const comments = await Comment
+        .query()
+        .where('post_id', post_id)
+        .fetch()
+
+      return response.status(200).json(comments)
+    } else {
+      return response.status(401).json({error: 'No post id provided'})
+    }
   }
 
-  /**
-   * Create/save a new comment.
-   * POST comments
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
+  async all ({request, response}) {
+    const comments = await Comment.query().with('post').fetch()
+    return response.status(200).json(comments)
+  }
+
   async store ({ request, response }) {
+    let data = request.all()
+    const validation = await validate(data,
+      {
+        name: 'required',
+        email: 'email|required',
+        comment: 'required',
+        reply: 'integer|required',
+        accepted: 'boolean|required',
+        post_id: 'boolean|required'
+      })
+
+    if (validation.fails()) {
+      return response.status(401).json(validation.messages())
+    } else {
+      if (data.honey_pot) {
+        return response.status(401).json({error: 'I SAID GOOD DAY SIR'})
+      } else {
+        delete data.honey_pot
+        const comment = await Comment.create(data)
+        return response.status(201).json(comment)
+      }
+    }
   }
 
-  /**
-   * Display a single comment.
-   * GET comments/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async show ({ params, request, response }) {
+  async edit ({params, response}) {
+    console.log(params)
+    /* const validation = await validate(request.all(),
+      {
+        id: 'integer|required',
+        decision: 'string|required'
+      })
+
+    if (validation.fails()) {
+      return response.status(401).json(validation.message())
+    } else {
+      const { id, decision } = request.only(['id', 'decision'])
+      const comment = await Comment.find(id)
+      if (decision === 'accept') {
+        comment.accepted = 1
+        await comment.save()
+        return response.status(200).json(comment)
+      } else {
+        await comment.delete()
+        return response.status(200).json('ok')
+      }
+    } */
   }
 
-  /**
-   * Delete a comment with id.
-   * DELETE comments/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async destroy ({ params, request, response }) {
+  async destroy ({params, response}) {
+    const comment = await Comment.find(params.id)
+    await comment.delete()
+    return response.status(200).json('ok')
   }
 }
 

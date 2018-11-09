@@ -11,7 +11,11 @@ Route.group(() => {
   Route.post('post/publish', 'PostController.publish').middleware('auth')
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
 
-  Route.post('comments', 'CommentController.store')
+  Route.get('all_comments', 'CommentController.all')
+  Route.post('comments', 'CommentController.list')
+  Route.post('comment', 'CommentController.store')
+  Route.delete('comment', 'CommentController.destroy').middleware('auth')
+  Route.post('comment/:decision/:id', 'CommentController.edit').middleware('auth')
   Route.delete('comment', 'CommentController.destroy').middleware('auth')
 
   Route.post('tag', 'TagController.store').middleware('auth')
