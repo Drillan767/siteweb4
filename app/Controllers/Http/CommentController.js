@@ -49,9 +49,8 @@ class CommentController {
     }
   }
 
-  async edit ({params, response}) {
-    console.log(params)
-    /* const validation = await validate(request.all(),
+  async edit ({request, response}) {
+    const validation = await validate(request.all(),
       {
         id: 'integer|required',
         decision: 'string|required'
@@ -62,15 +61,10 @@ class CommentController {
     } else {
       const { id, decision } = request.only(['id', 'decision'])
       const comment = await Comment.find(id)
-      if (decision === 'accept') {
-        comment.accepted = 1
-        await comment.save()
-        return response.status(200).json(comment)
-      } else {
-        await comment.delete()
-        return response.status(200).json('ok')
-      }
-    } */
+      comment.accepted = decision === 'accept' ? 1 : 0
+      await comment.save()
+      return response.status(200).json(comment)
+    }
   }
 
   async destroy ({params, response}) {
