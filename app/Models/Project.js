@@ -2,7 +2,7 @@
 
 const Model = use('Model')
 
-class Post extends Model {
+class Project extends Model {
   static boot () {
     super.boot()
 
@@ -16,11 +16,8 @@ class Post extends Model {
   tags () {
     return this
       .belongsToMany('App/Models/Tag')
-      .pivotTable('post_tag')
-  }
-
-  comments () {
-    return this.hasMany('App/Models/Comment')
+      .pivotTable('project_tag')
   }
 }
-module.exports = Post
+
+module.exports = Project

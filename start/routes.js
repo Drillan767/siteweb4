@@ -18,6 +18,13 @@ Route.group(() => {
   Route.post('comment/decision', 'CommentController.edit').middleware('auth')
   Route.delete('comment/delete/:id', 'CommentController.destroy').middleware('auth')
 
+  Route.get('portfolio', 'PortfolioController.index')
+  Route.post('portfolio/upload', 'PortfolioController.upload').middleware('auth')
+  Route.post('portfolio/upload/delete', 'PortfolioController.deleteUploads').middleware('auth')
+  Route.post('portfolio/store', 'PortfolioController.store').middleware('auth')
+  Route.post('portfolio/publish', 'PortfolioController.publish').middleware('auth')
+  Route.delete('portfolio/:id', 'PortfolioController.delete').middleware('auth')
+
   Route.post('tag', 'TagController.store').middleware('auth')
   Route.put('tag/:id', 'TagController.update').middleware('auth')
   Route.get('tags', 'TagController.all')

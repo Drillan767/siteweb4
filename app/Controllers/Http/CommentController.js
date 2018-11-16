@@ -44,6 +44,12 @@ class CommentController {
       } else {
         delete data.honey_pot
         const comment = await Comment.create(data)
+        await Mail.send('notifications.comment', comment, (message) => {
+          message
+            .from('noreply@josephlevarato.me', 'Website')
+            .to('jlevarato@pm.me')
+            .subject('New comment on an article')
+        })
         return response.status(201).json(comment)
       }
     }
