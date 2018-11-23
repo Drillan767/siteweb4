@@ -1,6 +1,7 @@
 'use strict'
 
 const Project = use('App/Models/Project')
+const Tag = use('App/Models/Tag')
 const Drive = use('Drive')
 const Env = use('Env')
 const Helpers = use('Helpers')
@@ -10,6 +11,20 @@ class PortfolioController {
   async index ({response}) {
     const projects = await Project.query().with('tags').fetch()
     return response.status(200).json(projects)
+  }
+
+  async show ({params, response}) {
+    const project = await Project
+      .query()
+      .with('tags')
+      .where('slug', params.slug)
+      .first()
+
+    if (project) {
+      return response.status(200).json(project)
+    } else {
+      return response.status(404).json('not found')
+    }
   }
 
   async store ({request, response}) {
@@ -71,14 +86,24 @@ class PortfolioController {
 
       // Handling extras
 
-      if (extra && extra.length > 0) {
-        for (let i = 0; i < extra.length; i++) {
-          if (content.includes(extra[i])) {
-            const basename = extra[i].split(/[\\/]/).pop()
+      if (extra) {
+        if (typeof extra === 'string') {
+          if (content.includes(extra)) {
+            const basename = extra.split(/[\\/]/).pop()
             await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
               Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
 
             content = content.replace(/\/tmp\//g, `/${project.id}/extra/`)
+          }
+        } else {
+          for (let i = 0; i < extra.length; i++) {
+            if (content.includes(extra[i])) {
+              const basename = extra[i].split(/[\\/]/).pop()
+              await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
+                Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
+
+              content = content.replace(/\/tmp\//g, `/${project.id}/extra/`)
+            }
           }
         }
       }
@@ -88,7 +113,7 @@ class PortfolioController {
       }
 
       project.illustration = illustration
-      project.images = images
+      project.images = JSON.stringify(images)
       project.content = content
       await project.save()
 
@@ -147,7 +172,27 @@ class PortfolioController {
     project.draft = !project.draft
     await project.save()
 
-    return response.status(200).json(post)
+    return response.status(200).json(project)
+  }
+
+  async related ({request, response}) {
+    const validation = await validate(request.all(), {
+      tag_id: 'integer|required',
+      project_id: 'integer|required'
+    })
+
+    if (validation.fails()) {
+      return response.status(401).json(validation.messages())
+    } else {
+      const { tag_id, project_id } = request.all()
+      const tag = await Tag.find(tag_id)
+      const projects = await tag
+        .project()
+        .whereNot('id', project_id)
+        .fetch()
+
+      return response.status(200).json(projects)
+    }
   }
 }
 

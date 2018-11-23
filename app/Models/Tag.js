@@ -10,7 +10,7 @@ class Tag extends Model {
   }
 
   project () {
-    return this.belongsToMany('App/Model/Portfolio')
+    return this.belongsToMany('App/Models/Project')
   }
 
   static get hidden () {

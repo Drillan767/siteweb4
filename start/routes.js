@@ -23,6 +23,8 @@ Route.group(() => {
   Route.post('portfolio/upload/delete', 'PortfolioController.deleteUploads').middleware('auth')
   Route.post('portfolio/store', 'PortfolioController.store').middleware('auth')
   Route.post('portfolio/publish', 'PortfolioController.publish').middleware('auth')
+  Route.get('portfolio/:slug', 'PortfolioController.show')
+  Route.post('portfolio/related', 'PortfolioController.related')
   Route.delete('portfolio/:id', 'PortfolioController.delete').middleware('auth')
 
   Route.post('tag', 'TagController.store').middleware('auth')
@@ -30,6 +32,11 @@ Route.group(() => {
   Route.get('tags', 'TagController.all')
   Route.get('tag/:id', 'TagController.show')
   Route.delete('tag/:id', 'TagController.delete').middleware('auth')
+
+  Route.get('/messages', 'ContactController.index').middleware('auth')
+  Route.get('/message/:id', 'ContactController.show').middleware('auth')
+  Route.delete('/message', 'ContactController.delete').middleware('auth')
+  Route.post('/message', 'ContactController.store')
 
   Route.post('/settings', 'SettingController.edit').middleware('auth')
   Route.get('/admin_settings', 'SettingController.get').middleware('auth')

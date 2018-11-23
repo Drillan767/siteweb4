@@ -11,6 +11,7 @@ class CommentController {
       const comments = await Comment
         .query()
         .where('post_id', post_id)
+        .where('accepted', true)
         .fetch()
 
       return response.status(200).json(comments)
@@ -20,7 +21,11 @@ class CommentController {
   }
 
   async all ({request, response}) {
-    const comments = await Comment.query().with('post').fetch()
+    const comments = await Comment
+      .query()
+      .where('accepted', true)
+      .with('post')
+      .fetch()
     return response.status(200).json(comments)
   }
 
@@ -33,7 +38,7 @@ class CommentController {
         comment: 'required',
         reply: 'integer|required',
         accepted: 'boolean|required',
-        post_id: 'boolean|required'
+        post_id: 'integer|required'
       })
 
     if (validation.fails()) {
@@ -44,12 +49,14 @@ class CommentController {
       } else {
         delete data.honey_pot
         const comment = await Comment.create(data)
+        /*
         await Mail.send('notifications.comment', comment, (message) => {
           message
-            .from('noreply@josephlevarato.me', 'Website')
+            .from('noreply@josephlevarato.me', 'Overlord')
             .to('jlevarato@pm.me')
             .subject('New comment on an article')
         })
+        */
         return response.status(201).json(comment)
       }
     }
