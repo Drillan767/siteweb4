@@ -9,7 +9,12 @@ class TagController {
   }
 
   async show ({params, response}) {
-    const tag = await Tag.query().where('slug', params.slug).first()
+    const tag = await Tag
+      .query()
+      .where('slug', params.slug)
+      .with('posts')
+      .with('project')
+      .first()
     return response.status(200).send(tag)
   }
 

@@ -1,10 +1,11 @@
 'use strict'
 
 const Post = use('App/Models/Post')
+const Tag = use('App/Models/Tag')
 const Helpers = use('Helpers')
 const Drive = use('Drive')
 const Env = use('Env')
-const { validateAll } = use('Validator')
+const { validateAll, validate } = use('Validator')
 
 class PostController {
   async index ({ response }) {
@@ -143,6 +144,24 @@ class PostController {
     await post.save()
 
     return response.status(200).json(post)
+  }
+
+  async related ({request, response}) {
+    const validation = await validate(request.all(), {
+      postId: 'integer|required',
+      tagId: 'integer|required'
+    })
+
+    if (validation.fails()) {
+      return response.status(401).json(validation.messages())
+    } else {
+      const {postId, tagId} = request.all()
+      const tag = await Tag.find(tagId)
+      const projects = tag
+        .posts()
+        .whereNot('id', tagId)
+        .fetch()
+    }
   }
 }
 

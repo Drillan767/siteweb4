@@ -30,7 +30,7 @@ Route.group(() => {
   Route.post('tag', 'TagController.store').middleware('auth')
   Route.put('tag/:id', 'TagController.update').middleware('auth')
   Route.get('tags', 'TagController.all')
-  Route.get('tag/:id', 'TagController.show')
+  Route.get('tag/:slug', 'TagController.show')
   Route.delete('tag/:id', 'TagController.delete').middleware('auth')
 
   Route.get('/messages', 'ContactController.index').middleware('auth')

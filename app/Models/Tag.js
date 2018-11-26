@@ -3,6 +3,11 @@
 const Model = use('Model')
 
 class Tag extends Model {
+
+  category () {
+    return this.belongsTo('App/Model/TagCategory')
+  }
+
   posts () {
     return this
       .belongsToMany('App/Models/Post')

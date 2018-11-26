@@ -5,13 +5,13 @@ const Schema = use('Schema')
 class TagSchema extends Schema {
   up () {
     this.create('tags', (table) => {
-      table.string('name_fr').notNullable().unique()
-      table.string('name_en').notNullable().unique()
-      table.string('category').notNullable()
+      table.string('name_fr', 50).notNullable().unique()
+      table.string('name_en', 50).notNullable().unique()
+      table.integer('category_id').notNullable()
       table.text('description_en').notNullable()
       table.text('description_fr').notNullable()
-      table.string('slug').notNullable().unique()
-      table.increments()
+      table.string('slug', 50).notNullable().unique()
+      table.increments().unsigned()
       table.timestamps()
     })
   }
