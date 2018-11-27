@@ -3,7 +3,6 @@
 const Model = use('Model')
 
 class Tag extends Model {
-
   category () {
     return this.belongsTo('App/Model/TagCategory')
   }

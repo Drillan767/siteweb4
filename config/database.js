@@ -48,8 +48,8 @@ module.exports = {
   mysql: {
     client: 'mysql',
     connection: {
-      socketPath: '/var/run/mysqld/mysqld.sock',
-      host: Env.get('DB_HOST', 'localhost'),
+      // socketPath: '/var/run/mysqld/mysqld.sock',
+      host: '172.18.0.2',
       port: Env.get('DB_PORT', '3306'),
       user: Env.get('DB_USER', 'root'),
       password: Env.get('DB_PASSWORD', ''),

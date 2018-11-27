@@ -43,39 +43,55 @@ class UserController {
   }
 
   async data ({request, response}) {
+    console.log(request.all())
     const user = await User.first()
     let profile_pic = null
     if (!user) {
       return response.status(500).json('No user found, wtf.')
     } else {
-      const { first_name, last_name, email, birthday, about, job_title } = request.all()
-      const image = request.file('profile_pic', {
-        types: ['image'],
-        allowedExtensions: ['jpg', 'png', 'jpeg'],
-        size: '10mb'
+      const validation = await validate(request.all(), {
+        first_name: 'string|required',
+        last_name: 'string|required',
+        email: 'email|required',
+        birthday: 'string|required',
+        about_en: 'required',
+        about_fr: 'required',
+        job_title: 'string|required'
       })
 
-      if (image) {
-        await image.move(Helpers.publicPath('user'), {
-          overwrite: true
+      if (validation.fails()) {
+        return response.status(401).json(validation.messages())
+      } else {
+        const {first_name, last_name, email, birthday, about_en, about_fr, job_title} = request.all()
+        const image = request.file('profile_pic', {
+          types: ['image'],
+          allowedExtensions: ['jpg', 'png', 'jpeg'],
+          size: '10mb'
         })
-        if (!image.moved()) {
-          return response.status(401).json(image.error())
-        } else {
-          profile_pic = `${Env.get('APP_URL')}/user/${image.clientName}`
+
+        if (image) {
+          await image.move(Helpers.publicPath('user'), {
+            overwrite: true
+          })
+          if (!image.moved()) {
+            return response.status(401).json(image.error())
+          } else {
+            profile_pic = `${Env.get('APP_URL')}/user/${image.clientName}`
+          }
         }
+
+        user.first_name = first_name || user.first_name
+        user.last_name = last_name || user.last_name
+        user.email = email || user.email
+        user.birthday = birthday || user.birthday
+        user.job_title = job_title || user.job_title
+        user.about_en = about_en || user.about_en
+        user.about_fr = about_fr || user.about_fr
+        user.profile_pic = profile_pic || user.profile_pic
+
+        await user.save()
+        return response.status(200).json(user)
       }
-
-      user.first_name = first_name || user.first_name
-      user.last_name = last_name || user.last_name
-      user.email = email || user.email
-      user.birthday = birthday || user.birthday
-      user.job_title = job_title || user.job_title
-      user.about = about || user.about
-      user.profile_pic = profile_pic || user.profile_pic
-
-      await user.save()
-      return response.status(200).json(user)
     }
   }
 
