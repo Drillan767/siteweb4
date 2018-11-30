@@ -20,7 +20,7 @@ class PostController {
     const { page, limit } = request.all()
     const posts = await Post
       .query()
-      .with('tags')
+      .with('tags.category')
       .paginate(page, limit)
     return response.status(200).json(posts)
   }

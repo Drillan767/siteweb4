@@ -12,7 +12,7 @@ class PortfolioTagSchema extends Schema {
   }
 
   down () {
-    this.drop('portfolio_tags')
+    this.drop('project_tag')
   }
 }
 
