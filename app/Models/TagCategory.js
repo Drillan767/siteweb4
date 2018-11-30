@@ -5,7 +5,7 @@ const Model = use('Model')
 
 class TagCategory extends Model {
   tag () {
-    return this.hasMany('App/Models/Tag')
+    return this.hasMany('App/Models/Tag', 'id', 'category_id')
   }
 }
 

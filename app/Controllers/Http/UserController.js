@@ -1,9 +1,11 @@
+/* eslint-disable camelcase */
 'use strict'
 
 const User = use('App/Models/User')
 const Token = use('App/Models/Token')
 const { validate } = use('Validator')
 const Encryption = use('Encryption')
+const Drive = use('Drive')
 const Helpers = use('Helpers')
 const Env = use('Env')
 
@@ -42,8 +44,28 @@ class UserController {
     }
   }
 
+  async upload ({request, response}) {
+    const image = request.file('image', {
+      types: ['image'],
+      allowedExtensions: ['jpg', 'png', 'jpeg'],
+      size: '10mb'
+    })
+
+    if (image) {
+      await image.move(Helpers.publicPath('user/tmp'), {
+        overwrite: true
+      })
+      if (!image.moved()) {
+        return response.status(401).json(image.message())
+      } else {
+        return `${Env.get('APP_URL')}/user/tmp/${image.clientName}`
+      }
+    } else {
+      return response.status(401).json({message: 'Image is not satisfactory.'})
+    }
+  }
+
   async data ({request, response}) {
-    console.log(request.all())
     const user = await User.first()
     let profile_pic = null
     if (!user) {
@@ -62,7 +84,8 @@ class UserController {
       if (validation.fails()) {
         return response.status(401).json(validation.messages())
       } else {
-        const {first_name, last_name, email, birthday, about_en, about_fr, job_title} = request.all()
+        const {first_name, last_name, email, birthday, extra_images, job_title} = request.all()
+        let {about_en, about_fr} = request.all()
         const image = request.file('profile_pic', {
           types: ['image'],
           allowedExtensions: ['jpg', 'png', 'jpeg'],
@@ -78,6 +101,38 @@ class UserController {
           } else {
             profile_pic = `${Env.get('APP_URL')}/user/${image.clientName}`
           }
+        } else {
+          return response.status(401).json({message: 'Overlord needs an image.'})
+        }
+
+        if (extra_images) {
+          if (extra_images.includes(',')) {
+            let images = []
+            extra_images.split(',').map(image => {
+              if (about_en.includes(image) || about_fr.includes(image)) {
+                images.push(image)
+              }
+            })
+            for (let i = 0; i < images.length; i++) {
+              if (!Drive.exists(Helpers.publicPath(`user/${images[i]}`))) {
+                await Drive.move(Helpers.publicPath('user/tmp'), Helpers.publicPath('user'), true)
+              }
+
+              about_fr = about_fr.replace(/tmp\//g, '')
+              about_en = about_en.replace(/tmp\//g, '')
+            }
+          } else {
+            if (about_fr.includes(extra_images) || about_en.includes(extra_images)) {
+              if (!Drive.exists(Helpers.publicPath(`user/${extra_images}`))) {
+                await Drive.move(Helpers.publicPath('user/tmp'), Helpers.publicPath('user'), true)
+              }
+
+              about_fr = about_fr.replace(/tmp\//g, '')
+              about_en = about_en.replace(/tmp\//g, '')
+              await Drive.delete('user/tmp')
+            }
+          }
+          await Drive.delete('user/tmp')
         }
 
         user.first_name = first_name || user.first_name

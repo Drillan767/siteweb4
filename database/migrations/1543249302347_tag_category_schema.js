@@ -6,7 +6,8 @@ const Schema = use('Schema')
 class TagCategorySchema extends Schema {
   up () {
     this.create('tag_categories', (table) => {
-      table.string('name', 50).notNullable().unique()
+      table.string('name_en', 50).notNullable().unique()
+      table.string('name_fr', 50).notNullable().unique()
       table.string('icon')
       table.increments()
       table.timestamps()

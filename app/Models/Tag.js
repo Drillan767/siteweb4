@@ -4,7 +4,7 @@ const Model = use('Model')
 
 class Tag extends Model {
   category () {
-    return this.belongsTo('App/Model/TagCategory')
+    return this.belongsTo('App/Models/TagCategory', 'category_id', 'id')
   }
 
   posts () {
@@ -25,7 +25,7 @@ class Tag extends Model {
     super.boot()
 
     this.addTrait('@provider:Lucid/Slugify', {
-      fields: { slug: 'name' },
+      fields: { slug: 'name_en' },
       strategy: 'dbIncrement',
       disableUpdates: false
     })

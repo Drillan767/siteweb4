@@ -16,6 +16,6 @@ module.exports = {
   rules: {
     'generator-star-spacing': 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'camelcase': [2, {properties: 'never'}]
+    'dot-notation': 2
   }
 }

@@ -26,13 +26,7 @@ class SettingController {
     }
 
     const setting = await Setting.find(1)
-
     const data = request.all()
-    const errors = []
-
-    if (errors.length > 0) {
-      return response.status(401).json(errors)
-    }
 
     if (!setting) {
       const setting = await Setting.create(data)
