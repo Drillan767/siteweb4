@@ -8,6 +8,7 @@ class TagSchema extends Schema {
       table.string('name_fr', 50).notNullable().unique()
       table.string('name_en', 50).notNullable().unique()
       table.integer('category_id').notNullable()
+      table.string('icon').notNullable()
       table.text('description_en').notNullable()
       table.text('description_fr').notNullable()
       table.string('slug', 50).notNullable().unique()

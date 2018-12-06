@@ -101,8 +101,8 @@ class UserController {
           } else {
             profile_pic = `${Env.get('APP_URL')}/user/${image.clientName}`
           }
-        } else {
-          return response.status(401).json({message: 'Overlord needs an image.'})
+        } else if (!image && user.profile_pic.length === 0) {
+          return response.status(401).json([{message: 'Overlord needs an image.'}])
         }
 
         if (extra_images) {
@@ -150,13 +150,8 @@ class UserController {
     }
   }
 
-  async logged ({auth, response}) {
-    try {
-      const user = await auth.getUser()
-      return user
-    } catch (e) {
-      response.send('Missing or invalid jwt token')
-    }
+  async logged ({response}) {
+    return response.status(200).json('ok')
   }
 
   async login ({request, auth, session, response}) {
@@ -202,12 +197,10 @@ class UserController {
   }
 
   async logout ({request, auth, response}) {
-    const rules = {
-      refresh_token: 'required'
-    }
-
     const { refresh_token } = request.only(['refresh_token'])
-    const validation = await validate({ refresh_token }, rules)
+    const validation = await validate({ refresh_token }, {
+      refresh_token: 'required'
+    })
     const decrypted = Encryption.decrypt(refresh_token)
 
     if (!validation.fails()) {

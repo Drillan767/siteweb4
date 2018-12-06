@@ -28,6 +28,7 @@
     "@adonisjs/lucid-slugify": "^1.0.3",
     "@adonisjs/mail": "^3.0.9",
     "@adonisjs/validator": "^5.0.6",
+    "gm": "^1.23.1",
     "mailgun-js": "^0.22.0",
     "mysql": "^2.16.0",
     "sqlite3": "^4.0.4"

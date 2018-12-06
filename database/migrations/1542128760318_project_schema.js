@@ -9,6 +9,7 @@ class ProjectSchema extends Schema {
       table.increments()
       table.string('title', 150).notNullable().unique()
       table.string('illustration').notNullable()
+      table.string('thumbnail').notNullable()
       table.boolean('draft').notNullable()
       table.text('content').notNullable()
       table.text('images')

@@ -6,6 +6,7 @@ const Helpers = use('Helpers')
 const Drive = use('Drive')
 const Env = use('Env')
 const { validateAll, validate } = use('Validator')
+const gm = require('gm').subClass({imageMagick: true})
 
 class PostController {
   async index ({ response }) {
@@ -20,7 +21,8 @@ class PostController {
     const { page, limit } = request.all()
     const posts = await Post
       .query()
-      .with('tags.category')
+      .with('tags')
+      .where('draft', false)
       .paginate(page, limit)
     return response.status(200).json(posts)
   }
@@ -31,6 +33,7 @@ class PostController {
       .with('tags')
       .where('slug', params.slug)
       .first()
+
     if (post) {
       post.tags = await post.tags().fetch()
       return response.status(200).send(post)
@@ -79,8 +82,18 @@ class PostController {
       if (!image.moved()) {
         return response.status(401).json([image.error()])
       } else {
-        illustration = `${Env.get('APP_URL')}/articles/${post.id}/${image.clientName}`
-        post.illustration = illustration
+        post.illustration = `${Env.get('APP_URL')}/articles/${post.id}/${image.clientName}`
+        if (Drive.exists(Helpers.publicPath(`articles/${post.id}/${image.clientName}`))) {
+          gm(Helpers.publicPath(`articles/${post.id}/${image.clientName}`))
+            .resize('50', '%')
+            .gravity('Center')
+            .crop('370', '320')
+            .write(Helpers.publicPath(`articles/${post.id}/thumb.${image.subtype}`), (e) => {
+              if (e) console.log(e)
+            })
+          post.thumbnail = `${Env.get('APP_URL')}/articles/${post.id}/thumb.${image.subtype}`
+        }
+
         await post.save()
       }
     }
