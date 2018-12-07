@@ -12,7 +12,6 @@ class PortfolioController {
   async index ({response}) {
     const projects = await Project
       .query()
-      .where('draft', false)
       .with('tags')
       .fetch()
     return response.status(200).json(projects)

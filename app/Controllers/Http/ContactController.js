@@ -48,6 +48,27 @@ class ContactController {
     }
   }
 
+  async read ({request, response}) {
+    const validation = await validate(request.all(), {
+      id: 'required|integer'
+    })
+
+    if (validation.fails()) {
+      return response.status(401).json(validation.messages())
+    } else {
+      const { id } = request.all()
+      const message = await Contact.find(id)
+      message.read = true
+      await message.save()
+
+      return response.status(200).json(message)
+    }
+  }
+
+  send ({request, response}) {
+    // ...
+  }
+
   async delete ({request, response}) {
     const validation = await validate(request.all(), {
       id: 'integer|required'

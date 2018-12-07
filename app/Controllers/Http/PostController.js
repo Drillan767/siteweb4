@@ -22,7 +22,6 @@ class PostController {
     const posts = await Post
       .query()
       .with('tags')
-      .where('draft', false)
       .paginate(page, limit)
     return response.status(200).json(posts)
   }

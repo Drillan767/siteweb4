@@ -38,9 +38,11 @@ Route.group(() => {
   Route.get('message/:id', 'ContactController.show').middleware('auth')
   Route.delete('message', 'ContactController.delete').middleware('auth')
   Route.post('message', 'ContactController.store')
+  Route.post('message/read', 'ContactController.read').middleware('auth')
 
   Route.post('settings', 'SettingController.edit').middleware('auth')
   Route.get('admin_settings', 'SettingController.get').middleware('auth')
+  Route.post('all', 'SettingController.dashboard').middleware('auth')
   Route.get('settings', 'SettingController.settings')
 
   Route.post('user', 'UserController.register')

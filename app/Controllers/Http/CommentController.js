@@ -74,7 +74,8 @@ class CommentController {
     } else {
       const { id, decision } = request.only(['id', 'decision'])
       const comment = await Comment.find(id)
-      comment.accepted = decision === 'accept' ? 1 : 0
+      comment.accepted = decision === 'accept';
+    }
       await comment.save()
       return response.status(200).json(comment)
     }
