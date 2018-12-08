@@ -7,7 +7,6 @@ class TagSchema extends Schema {
     this.create('tags', (table) => {
       table.string('name_fr', 50).notNullable().unique()
       table.string('name_en', 50).notNullable().unique()
-      table.integer('category_id').notNullable()
       table.string('icon').notNullable()
       table.text('description_en').notNullable()
       table.text('description_fr').notNullable()

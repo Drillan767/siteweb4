@@ -69,7 +69,8 @@ class PostController {
     }
 
     const {title, content, lang, draft} = request.all()
-    const post = await Post.create({title, content, lang, draft, illustration})
+    let thumbnail = ''
+    const post = await Post.create({title, content, thumbnail, lang, draft, illustration})
     const tags = request.input('tags').split(',').map(Number)
     if (tags && tags.length > 0) {
       await post.tags().attach(tags)

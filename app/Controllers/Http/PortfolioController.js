@@ -48,9 +48,10 @@ class PortfolioController {
       const data = request.all()
       data.illustration = ''
       data.images = ''
-      data.thumbnail = {}
+      data.thumbnail = ''
       let tags = data.tags
       delete data.tags
+      console.log(data)
       const project = await Project.create(data)
 
       tags = tags.split(',').map(Number)
@@ -78,8 +79,6 @@ class PortfolioController {
             .write(Helpers.publicPath(`projects/${project.id}/small.${single.subtype}`), (e) => {
               if (e) {
                 console.log(e)
-              } else {
-                data.thumbnail.small = `${Env.get('APP_URL')}/projects/${project.id}/small.${single.subtype}`
               }
             })
           // Wide
@@ -90,10 +89,12 @@ class PortfolioController {
             .write(Helpers.publicPath(`projects/${project.id}/wide.${single.subtype}`), (e) => {
               if (e) {
                 console.log(e)
-              } else {
-                data.thumbnail.wide = `${Env.get('APP_URL')}/projects/${project.id}/wide.${single.subtype}`
               }
             })
+          data.thumbnail = JSON.stringify({
+            small: `${Env.get('APP_URL')}/projects/${project.id}/small.${single.subtype}`,
+            wide: `${Env.get('APP_URL')}/projects/${project.id}/wide.${single.subtype}`
+          })
         }
       }
 
@@ -266,14 +267,10 @@ class PortfolioController {
         return response.status(401).json(errors)
       }
 
-      project.title = data.title || project.title
-      project.illustration = data.illustration || project.illustration
-      project.draft = data.draft || project.draft
-      project.thumbnail = data.thumbnail || project.thumbnail
-      project.content = data.content || project.content
-      project.images = data.images || project.images
-      project.website = data.website || project.website
-      project.github = data.github || project.github
+      let fields = ['title', 'illustration', 'draft', 'thumbnail', 'content', 'images', 'website', 'github']
+      fields.map(field => {
+        project[field] = data[field] || project[field]
+      })
 
       await project.save()
       await project.tags().detach()
