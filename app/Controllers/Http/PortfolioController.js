@@ -45,14 +45,21 @@ class PortfolioController {
     if (validation.fails()) {
       return response.status(401).json(validation.messages())
     } else {
-      const data = request.all()
-      data.illustration = ''
-      data.images = ''
-      data.thumbnail = ''
-      let tags = data.tags
-      delete data.tags
-      console.log(data)
-      const project = await Project.create(data)
+      let { title, draft, content, website, github, tags, extra } = request.all()
+      draft = (draft === '1')
+      let illustration = ''
+      let images = ''
+      let thumbnail = ''
+      const project = await Project.create({
+        title,
+        draft,
+        content,
+        website,
+        github,
+        illustration,
+        images,
+        thumbnail
+      })
 
       tags = tags.split(',').map(Number)
       if (tags && tags.length > 0) {
@@ -91,7 +98,7 @@ class PortfolioController {
                 console.log(e)
               }
             })
-          data.thumbnail = JSON.stringify({
+          thumbnail = JSON.stringify({
             small: `${Env.get('APP_URL')}/projects/${project.id}/small.${single.subtype}`,
             wide: `${Env.get('APP_URL')}/projects/${project.id}/wide.${single.subtype}`
           })
@@ -120,26 +127,25 @@ class PortfolioController {
       }
 
       // Handling extras
-
-      if (data.extra) {
-        if (typeof data.extra === 'string') {
-          if (project.content.includes(data.extra)) {
-            const basename = data.extra.split(/[\\/]/).pop()
+      if (extra) {
+        if (typeof extra === 'string') {
+          if (project.content.includes(extra)) {
+            const basename = extra.split(/[\\/]/).pop()
             await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
               Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
 
             project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
           }
         } else {
-          for (let i = 0; i < data.extra.length; i++) {
-            if (project.content.includes(data.extra[i])) {
-              const basename = data.extra[i].split(/[\\/]/).pop()
+          for (let i = 0; i < extra.length; i++) {
+            if (project.content.includes(extra[i])) {
+              const basename = extra[i].split(/[\\/]/).pop()
               await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
                 Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
-
-              project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
             }
           }
+          project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
+          // await Drive.delete(Helpers.publicPath('projects/tmp'))
         }
       }
 

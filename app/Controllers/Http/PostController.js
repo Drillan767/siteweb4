@@ -55,13 +55,6 @@ class PostController {
       content: 'required|min:30',
       lang: 'required',
       draft: 'required'
-    },
-    {
-      'title.required': 'The field "title" is required',
-      'tags.required': 'The field "tags" is required',
-      'content.required': 'The field "content" is required',
-      'content.min': 'The post\'s length must be 30 characters minimum',
-      'illustration.required': 'The field "illustration" is required'
     })
 
     if (validation.fails()) {
