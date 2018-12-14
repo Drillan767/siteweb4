@@ -61,8 +61,9 @@ class PostController {
       return response.status(401).json(validation.messages())
     }
 
-    const {title, content, lang, draft} = request.all()
+    let {title, content, lang, draft} = request.all()
     let thumbnail = ''
+    draft = (draft === '1')
     const post = await Post.create({title, content, thumbnail, lang, draft, illustration})
     const tags = request.input('tags').split(',').map(Number)
     if (tags && tags.length > 0) {
@@ -102,7 +103,7 @@ class PostController {
     post.title = title || post.title
     post.content = content || post.content
     post.lang = lang || post.lang
-    post.draft = draft || post.draft
+    post.draft = (draft === '1') || post.draft
 
     const image = request.file('illustration', {
       types: ['image'],
@@ -143,12 +144,11 @@ class PostController {
     }
   }
 
-  async publish ({params, request, response}) {
-    const param = request.only(['id'])
-    const post = await Post.find(param.id)
+  async publish ({request, response}) {
+    const { id } = request.only(['id'])
+    const post = await Post.find(id)
     post.draft = !post.draft
     await post.save()
-
     return response.status(200).json(post)
   }
 

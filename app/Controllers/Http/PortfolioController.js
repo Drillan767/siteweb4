@@ -335,8 +335,8 @@ class PortfolioController {
   }
 
   async publish ({request, response}) {
-    const param = request.only(['id'])
-    const project = await Project.find(param.id)
+    const { id } = request.only(['id'])
+    const project = await Project.find(id)
     project.draft = !project.draft
     await project.save()
 
