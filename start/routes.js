@@ -3,10 +3,11 @@
 const Route = use('Route')
 
 Route.group(() => {
-  Route.post('post', 'PostController.store').middleware('auth:jwt')
+  Route.post('post', 'PostController.store').middleware('auth')
   Route.get('posts', 'PostController.index')
   Route.post('post/infinite', 'PostController.infinite')
   Route.get('post/:slug', 'PostController.show')
+  Route.post('post/related', 'PostController.related')
   Route.put('post/:slug', 'PostController.update').middleware('auth')
   Route.post('post/publish', 'PostController.publish').middleware('auth')
   Route.delete('post/:id', 'PostController.delete').middleware('auth')
@@ -19,13 +20,13 @@ Route.group(() => {
   Route.delete('comment/delete/:id', 'CommentController.destroy').middleware('auth')
 
   Route.get('portfolio', 'PortfolioController.index')
+  Route.post('portfolio/related', 'PortfolioController.related')
   Route.post('portfolio/upload', 'PortfolioController.upload').middleware('auth')
   Route.post('portfolio/upload/delete', 'PortfolioController.deleteUploads').middleware('auth')
   Route.post('portfolio/store', 'PortfolioController.store').middleware('auth')
   Route.post('portfolio/publish', 'PortfolioController.publish').middleware('auth')
   Route.post('portfolio/:id', 'PortfolioController.update').middleware('auth')
   Route.get('portfolio/:slug', 'PortfolioController.show')
-  Route.post('portfolio/related', 'PortfolioController.related')
   Route.delete('portfolio/:id', 'PortfolioController.delete').middleware('auth')
 
   Route.post('tag', 'TagController.store').middleware('auth')

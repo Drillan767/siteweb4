@@ -72,37 +72,43 @@ class PortfolioController {
         types: ['image'],
         extnames: ['png', 'jpg', 'jpeg']
       })
-      await single.move(Helpers.publicPath(`projects/${project.id}`))
-      if (!single.moved()) {
-        errors.push(single.error())
-      } else {
-        project.illustration = `${Env.get('APP_URL')}/projects/${project.id}/${single.clientName}`
-        if (Drive.exists(Helpers.publicPath(`projects/${project.id}/${single.clientName}`))) {
-          // Small
-          gm(Helpers.publicPath(`projects/${project.id}/${single.clientName}`))
-            .resize('50', '%')
-            .gravity('Center')
-            .crop('278', '197')
-            .write(Helpers.publicPath(`projects/${project.id}/small.${single.subtype}`), (e) => {
-              if (e) {
-                console.log(e)
-              }
+      if (single) {
+        await single.move(Helpers.publicPath(`projects/${project.id}`), {
+          name: single.clientName.replace(/ /gm, '-')
+        })
+        if (!single.moved()) {
+          errors.push(single.error())
+        } else {
+          project.illustration = `${Env.get('APP_URL')}/projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`
+          if (Drive.exists(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))) {
+            // Small
+            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
+              .resize('50', '%')
+              .gravity('Center')
+              .crop('278', '197')
+              .write(Helpers.publicPath(`projects/${project.id}/small.${single.subtype}`), (e) => {
+                if (e) {
+                  console.log(e)
+                }
+              })
+            // Wide
+            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
+              .resize('50', '%')
+              .gravity('Center')
+              .crop('463', '197')
+              .write(Helpers.publicPath(`projects/${project.id}/wide.${single.subtype}`), (e) => {
+                if (e) {
+                  console.log(e)
+                }
+              })
+            project.thumbnail = JSON.stringify({
+              small: `${Env.get('APP_URL')}/projects/${project.id}/small.${single.subtype}`,
+              wide: `${Env.get('APP_URL')}/projects/${project.id}/wide.${single.subtype}`
             })
-          // Wide
-          gm(Helpers.publicPath(`projects/${project.id}/${single.clientName}`))
-            .resize('50', '%')
-            .gravity('Center')
-            .crop('463', '197')
-            .write(Helpers.publicPath(`projects/${project.id}/wide.${single.subtype}`), (e) => {
-              if (e) {
-                console.log(e)
-              }
-            })
-          thumbnail = JSON.stringify({
-            small: `${Env.get('APP_URL')}/projects/${project.id}/small.${single.subtype}`,
-            wide: `${Env.get('APP_URL')}/projects/${project.id}/wide.${single.subtype}`
-          })
+          }
         }
+      } else {
+        errors.push({message: 'An illustration is required'})
       }
 
       // Handling multi
@@ -132,7 +138,7 @@ class PortfolioController {
           if (project.content.includes(extra)) {
             const basename = extra.split(/[\\/]/).pop()
             await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
-              Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
+              Helpers.publicPath(`projects/${project.id}/extra/${basename.replace(/ /gm, '-')}`))
 
             project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
           }
@@ -141,11 +147,11 @@ class PortfolioController {
             if (project.content.includes(extra[i])) {
               const basename = extra[i].split(/[\\/]/).pop()
               await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
-                Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
+                Helpers.publicPath(`projects/${project.id}/extra/${basename.replace(/ /gm, '-')}`))
             }
           }
           project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
-          // await Drive.delete(Helpers.publicPath('projects/tmp'))
+          await Drive.delete(Helpers.publicPath('projects/tmp'))
         }
       }
 
@@ -187,14 +193,16 @@ class PortfolioController {
       if (single) {
         let old = project.illustration.split(/[\\/]/).pop()
         await Drive.delete(Helpers.publicPath(`projects/${project.id}/${old}`))
-        await single.move(Helpers.publicPath(`projects/${project.id}`))
+        await single.move(Helpers.publicPath(`projects/${project.id}`), {
+          name: single.clientName.replace(/ /gm, '-')
+        })
         if (!single.moved()) {
           errors.push(single.error())
         } else {
-          data.illustration = `${Env.get('APP_URL')}/projects/${project.id}/${single.clientName}`
-          if (Drive.exists(Helpers.publicPath(`projects/${project.id}/${single.clientName}`))) {
+          data.illustration = `${Env.get('APP_URL')}/projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`
+          if (Drive.exists(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))) {
             // Small
-            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName}`))
+            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
               .resize('50', '%')
               .gravity('Center')
               .crop('278', '197')
@@ -204,7 +212,7 @@ class PortfolioController {
                 }
               })
             // Wide
-            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName}`))
+            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
               .resize('50', '%')
               .gravity('Center')
               .crop('463', '197')
@@ -290,13 +298,17 @@ class PortfolioController {
       type: ['image']
     })
 
-    const { id, type } = request.all()
+    const { id } = request.all()
     // available types: multi|extra
     if (id) {
-      await file.move(Helpers.publicPath(`project/${id}`))
+      await file.move(Helpers.publicPath(`project/${id}`), {
+        overwrite: true,
+        name: file.clientName.replace(/ /gm, '-')
+      })
     }
     await file.move(Helpers.publicPath('projects/tmp'), {
-      overwrite: true
+      overwrite: true,
+      name: file.clientName.replace(/ /gm, '-')
     })
 
     if (!file.moved()) {
@@ -330,6 +342,7 @@ class PortfolioController {
     } else {
       await project.tags().detach()
       await project.delete()
+      await Drive.delete(Helpers.publicPath(`projects/${params.id}`))
       return response.status(200).json('ok')
     }
   }
@@ -356,9 +369,9 @@ class PortfolioController {
       const tag = await Tag.find(tag_id)
       const projects = await tag
         .project()
+        .where('draft', false)
         .whereNot('id', project_id)
         .fetch()
-
       return response.status(200).json(projects)
     }
   }

@@ -71,7 +71,9 @@ class PostController {
     }
 
     if (image) {
-      await image.move(Helpers.publicPath('articles/' + post.id))
+      await image.move(Helpers.publicPath('articles/' + post.id), {
+        name: image.clientName.replace(/ /gm, '-')
+      })
 
       if (!image.moved()) {
         return response.status(401).json([image.error()])
@@ -114,7 +116,10 @@ class PostController {
     if (image) {
       const file = post.illustration.replace(Env.get('APP_URL'), '')
       await Drive.delete(Helpers.publicPath(file))
-      await image.move(Helpers.publicPath(`articles/${post.id}`))
+      await image.move(Helpers.publicPath(`articles/${post.id}`), {
+        overwrite: true,
+        name: image.clientName.replace(/ /gm, '-')
+      })
 
       if (!image.moved()) {
         return response.status(401).json([image.error()])
@@ -139,6 +144,7 @@ class PostController {
       return response.status(404).json(null)
     } else {
       await post.tags().detach()
+      await Drive.delete(Helpers.publicPath(`articles/${params.id}`))
       await post.delete()
       return response.status(200).json('ok')
     }
@@ -163,10 +169,12 @@ class PostController {
     } else {
       const {postId, tagId} = request.all()
       const tag = await Tag.find(tagId)
-      const projects = tag
+      const posts = await tag
         .posts()
-        .whereNot('id', tagId)
+        .where('draft', false)
+        .whereNot('id', postId)
         .fetch()
+      return response.status(200).json(posts)
     }
   }
 }
