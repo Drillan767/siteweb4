@@ -14,6 +14,7 @@ class UserSchema extends Schema {
       table.text('about_fr')
       table.string('job_title')
       table.string('email', 150).notNullable().unique()
+      table.string('reset_token')
       table.string('password', 60).notNullable()
       table.timestamps()
     })

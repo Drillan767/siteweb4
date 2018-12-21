@@ -48,6 +48,9 @@ Route.group(() => {
 
   Route.post('user', 'UserController.register')
   Route.post('user/token/refresh', 'UserController.refreshToken')
+  Route.post('user/reset', 'UserController.reset')
+  Route.post('user/reset/token', 'UserController.verifyHash')
+  Route.post('user/reset/password', 'UserController.resetPassword')
   Route.put('user_data', 'UserController.data').middleware('auth')
   Route.post('user/upload', 'UserController.upload').middleware('auth')
   Route.get('user', 'UserController.show')
