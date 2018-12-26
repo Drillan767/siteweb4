@@ -6,7 +6,6 @@ const Token = use('App/Models/Token')
 const { validate } = use('Validator')
 const Encryption = use('Encryption')
 const Drive = use('Drive')
-const Hash = use('Hash')
 const Mail = use('Mail')
 const Helpers = use('Helpers')
 const Env = use('Env')
@@ -81,13 +80,14 @@ class UserController {
         birthday: 'string|required',
         about_en: 'required',
         about_fr: 'required',
-        job_title: 'string|required'
+        job_title: 'string|required',
+        password: 'string|min:8'
       })
 
       if (validation.fails()) {
         return response.status(401).json(validation.messages())
       } else {
-        const {first_name, last_name, email, birthday, extra_images, job_title} = request.all()
+        const {first_name, last_name, email, birthday, extra_images, job_title, password} = request.all()
         let {about_en, about_fr} = request.all()
         const image = request.file('profile_pic', {
           types: ['image'],
@@ -146,6 +146,7 @@ class UserController {
         user.about_en = about_en || user.about_en
         user.about_fr = about_fr || user.about_fr
         user.profile_pic = profile_pic || user.profile_pic
+        user.password = password || user.password
 
         await user.save()
         return response.status(200).json(user)
