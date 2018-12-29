@@ -57,4 +57,6 @@ Route.group(() => {
   Route.post('login', 'UserController.login')
   Route.post('logout', 'UserController.logout')
   Route.post('logged_in', 'UserController.logged').middleware('auth')
+  Route.post('blacklist', 'UserController.blacklist')
+  Route.post('check', 'UserController.checkWhiteList')
 }).prefix('api/v1')

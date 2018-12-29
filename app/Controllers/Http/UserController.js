@@ -5,6 +5,8 @@ const User = use('App/Models/User')
 const Token = use('App/Models/Token')
 const { validate } = use('Validator')
 const Encryption = use('Encryption')
+const Hash = use('Hash')
+const Blacklist = use('App/Models/Blacklist')
 const Drive = use('Drive')
 const Mail = use('Mail')
 const Helpers = use('Helpers')
@@ -286,6 +288,23 @@ class UserController {
         await user.save()
         return response.status(200).json(await auth.withRefreshToken().attempt(user.email, password))
       }
+    }
+  }
+
+  async blacklist ({request}) {
+    const crypted_ip = await Hash.make(request.ip())
+    await Blacklist.create({crypted_ip})
+  }
+
+  async checkWhiteList ({request, response}) {
+    const list = await Blacklist.all()
+    console.log(list.rows)
+    for (const ip of list.rows) {
+      const checked = await Hash.verify(request.ip(), ip.crypted_ip)
+      if (checked) {
+        return response.status(200).json('blocked')
+      }
+      break
     }
   }
 }

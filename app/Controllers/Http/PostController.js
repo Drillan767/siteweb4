@@ -173,6 +173,7 @@ class PostController {
         .posts()
         .where('draft', false)
         .whereNot('id', postId)
+        .limit(4)
         .fetch()
       return response.status(200).json(posts)
     }
