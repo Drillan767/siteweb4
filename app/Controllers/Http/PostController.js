@@ -85,7 +85,6 @@ class PostController {
             .gravity('Center')
             .crop('370', '320')
             .write(Helpers.publicPath(`articles/${post.id}/thumb.${image.subtype}`), (e) => {
-              if (e) console.log(e)
             })
           post.thumbnail = `${Env.get('APP_URL')}/articles/${post.id}/thumb.${image.subtype}`
         }

@@ -298,7 +298,6 @@ class UserController {
 
   async checkWhiteList ({request, response}) {
     const list = await Blacklist.all()
-    console.log(list.rows)
     for (const ip of list.rows) {
       const checked = await Hash.verify(request.ip(), ip.crypted_ip)
       if (checked) {
