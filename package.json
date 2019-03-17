@@ -22,7 +22,7 @@
     "@adonisjs/cors": "^1.0.7",
     "@adonisjs/drive": "^1.0.4",
     "@adonisjs/fold": "^4.0.9",
-    "@adonisjs/framework": "^5.0.12",
+    "@adonisjs/framework": "^5.0.13",
     "@adonisjs/ignitor": "^2.0.8",
     "@adonisjs/lucid": "^5.0.4",
     "@adonisjs/lucid-slugify": "^1.0.3",
@@ -31,8 +31,7 @@
     "gm": "^1.23.1",
     "mailgun-js": "^0.22.0",
     "mysql": "^2.16.0",
-    "random-string": "^0.2.0",
-    "sqlite3": "^4.0.4"
+    "random-string": "^0.2.0"
   },
   "devDependencies": {
     "babel-eslint": "^9.0.0",
@@ -40,7 +39,7 @@
     "eslint-config-standard": "^10.2.1",
     "eslint-friendly-formatter": "^3.0.0",
     "eslint-loader": "^1.7.1",
-    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^3.0.1",

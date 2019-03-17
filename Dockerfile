@@ -7,8 +7,8 @@ WORKDIR /home/siteweb4-api
 
 COPY . ./
 RUN npm install
-RUN node --harmony ace migration:run --force
+RUN npm i -g @adonisjs/cli
 
-EXPOSE 80
+EXPOSE 3333
 
 CMD ["adonis", "serve"]
