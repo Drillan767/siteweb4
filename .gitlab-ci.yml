@@ -1,0 +1,26 @@
+image: docker:stable
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+
+stages:
+  - build & push
+  - test
+
+docker build:
+  stage: build & push
+  image: docker:latest
+  script:
+    - docker info
+    - docker build -t registry.gitlab.com/jaegernaut/siteweb4:latest .
+    - echo "$REGISTRY_PASSWORD" | docker login registry.gitlab.com -u JaegerNaut --password-stdin
+    - docker push registry.gitlab.com/jaegernaut/siteweb4:latest
+
+docker test:
+  stage: test
+  image: registry.gitlab.com/jaegernaut/siteweb4:latest
+  script:
+    - adonis test

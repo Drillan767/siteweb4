@@ -1,7 +1,6 @@
 'use strict'
 
 const Tag = use('App/Models/Tag')
-const { validate } = use('Validator')
 
 class TagController {
   async all ({request, response}) {
@@ -21,25 +20,13 @@ class TagController {
   }
 
   async store ({request, response}) {
-    const validation = await validate(request.all(), {
-      name_en: 'required|string',
-      name_fr: 'string',
-      icon: 'string|required',
-      description_en: 'required',
-      description_fr: 'required'
-    })
-
-    if (validation.fails()) {
-      return response.status(401).json(validation.messages())
-    } else {
-      let data = request.all()
-      if (!data.name_fr) {
-        data.name_fr = data.name_en
-      }
-
-      const tag = await Tag.create(data)
-      return response.status(201).send(tag)
+    let data = request.all()
+    if (!data.name_fr) {
+      data.name_fr = data.name_en
     }
+
+    const tag = await Tag.create(data)
+    return response.status(201).send(tag)
   }
 
   async update ({request, params, response}) {

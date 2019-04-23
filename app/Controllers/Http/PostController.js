@@ -49,18 +49,6 @@ class PostController {
       size: '10mb'
     })
 
-    const validation = await validateAll(request.all(), {
-      title: 'required|min:5|max:60',
-      tags: 'required',
-      content: 'required|min:30',
-      lang: 'required',
-      draft: 'required'
-    })
-
-    if (validation.fails()) {
-      return response.status(401).json(validation.messages())
-    }
-
     let {title, content, lang, draft} = request.all()
     let thumbnail = ''
     draft = (draft === '1')

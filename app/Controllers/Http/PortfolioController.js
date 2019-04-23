@@ -39,13 +39,13 @@ class PortfolioController {
         tags: 'required',
         content: 'required|min:30',
         draft: 'required',
-        github: 'string|required',
+        repository: 'string|required',
         website: 'string|required'
       })
     if (validation.fails()) {
       return response.status(401).json(validation.messages())
     } else {
-      let { title, draft, content, website, github, tags, extra } = request.all()
+      let { title, draft, content, website, repository, tags, extra } = request.all()
       draft = (draft === '1')
       let illustration = ''
       let images = ''
@@ -55,7 +55,7 @@ class PortfolioController {
         draft,
         content,
         website,
-        github,
+        repository,
         illustration,
         images,
         thumbnail
@@ -167,130 +167,117 @@ class PortfolioController {
   async update ({params, request, response}) {
     const project = await Project.find(params.id)
     let errors = []
-    const validation = await validate(request.all(),
-      {
-        title: 'string|required',
-        tags: 'required',
-        content: 'required|min:30',
-        draft: 'required',
-        github: 'string|required',
-        website: 'string|required'
-      })
-    if (validation.fails()) {
-      return response.status(401).json(validation.messages())
-    } else {
-      const data = request.all()
-      data.thumbnail = ''
-      let tags = data.tags
-      delete data.tags
+    const data = request.all()
+    data.thumbnail = ''
+    let tags = data.tags
+    delete data.tags
 
-      // handling illustration
+    // handling illustration
 
-      const single = request.file('illustration', {
-        types: ['image'],
-        extnames: ['png', 'jpg', 'jpeg']
+    const single = request.file('illustration', {
+      types: ['image'],
+      extnames: ['png', 'jpg', 'jpeg']
+    })
+    if (single) {
+      let old = project.illustration.split(/[\\/]/).pop()
+      await Drive.delete(Helpers.publicPath(`projects/${project.id}/${old}`))
+      await single.move(Helpers.publicPath(`projects/${project.id}`), {
+        name: single.clientName.replace(/ /gm, '-')
       })
-      if (single) {
-        let old = project.illustration.split(/[\\/]/).pop()
-        await Drive.delete(Helpers.publicPath(`projects/${project.id}/${old}`))
-        await single.move(Helpers.publicPath(`projects/${project.id}`), {
-          name: single.clientName.replace(/ /gm, '-')
-        })
-        if (!single.moved()) {
-          errors.push(single.error())
-        } else {
-          data.illustration = `${Env.get('APP_URL')}/projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`
-          if (Drive.exists(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))) {
-            // Small
-            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
-              .resize('50', '%')
-              .gravity('Center')
-              .crop('278', '197')
-              .write(Helpers.publicPath(`projects/${project.id}/small.${single.subtype}`), (e) => {
-                if (e) {
-                  console.log(e)
-                }
-              })
-            // Wide
-            gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
-              .resize('50', '%')
-              .gravity('Center')
-              .crop('463', '197')
-              .write(Helpers.publicPath(`projects/${project.id}/wide.${single.subtype}`), (e) => {
-                if (e) {
-                  console.log(e)
-                }
-              })
-            data.thumbnail = JSON.stringify({
-              small: `${Env.get('APP_URL')}/projects/${project.id}/small.${single.subtype}`,
-              wide: `${Env.get('APP_URL')}/projects/${project.id}/wide.${single.subtype}`
+      if (!single.moved()) {
+        errors.push(single.error())
+      } else {
+        data.illustration = `${Env.get('APP_URL')}/projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`
+        if (Drive.exists(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))) {
+          // Small
+          gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
+            .resize('50', '%')
+            .gravity('Center')
+            .crop('278', '197')
+            .write(Helpers.publicPath(`projects/${project.id}/small.${single.subtype}`), (e) => {
+              if (e) {
+                console.log(e)
+              }
             })
-          }
+          // Wide
+          gm(Helpers.publicPath(`projects/${project.id}/${single.clientName.replace(/ /gm, '-')}`))
+            .resize('50', '%')
+            .gravity('Center')
+            .crop('463', '197')
+            .write(Helpers.publicPath(`projects/${project.id}/wide.${single.subtype}`), (e) => {
+              if (e) {
+                console.log(e)
+              }
+            })
+          data.thumbnail = JSON.stringify({
+            small: `${Env.get('APP_URL')}/projects/${project.id}/small.${single.subtype}`,
+            wide: `${Env.get('APP_URL')}/projects/${project.id}/wide.${single.subtype}`
+          })
+        }
+      }
+    } else {
+      data.thumbnail = null
+    }
+
+    // Handling multi
+
+    const multi = request.file('images', {
+      types: ['image'],
+      extnames: ['png', 'jpg', 'jpeg']
+    })
+    if (multi) {
+      await Drive.delete(Helpers.publicPath(`projects/${project.id}/images`))
+      await multi.moveAll(Helpers.publicPath(`projects/${project.id}/images`))
+      if (!multi.movedAll()) {
+        multi.errors().map(error => {
+          errors.push(error)
+        })
+      } else {
+        data.images = JSON.stringify(
+          multi.movedList().map(
+            image => {
+              return `${Env.get('APP_URL')}/projects/${project.id}/images/${image.clientName}`
+            }
+          )
+        )
+      }
+    }
+
+    if (data.extra) {
+      if (typeof data.extra === 'string') {
+        if (project.content.includes(data.extra)) {
+          const basename = data.extra.split(/[\\/]/).pop()
+          await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
+            Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
+
+          project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
         }
       } else {
-        data.thumbnail = null
-      }
-
-      // Handling multi
-
-      const multi = request.file('images', {
-        types: ['image'],
-        extnames: ['png', 'jpg', 'jpeg']
-      })
-      if (multi) {
-        await Drive.delete(Helpers.publicPath(`projects/${project.id}/images`))
-        await multi.moveAll(Helpers.publicPath(`projects/${project.id}/images`))
-        if (!multi.movedAll()) {
-          multi.errors().map(error => {
-            errors.push(error)
-          })
-        } else {
-          data.images = JSON.stringify(
-            multi.movedList().map(
-              image => {
-                return `${Env.get('APP_URL')}/projects/${project.id}/images/${image.clientName}`
-              }
-            )
-          )
-        }
-      }
-
-      if (data.extra) {
-        if (typeof data.extra === 'string') {
-          if (project.content.includes(data.extra)) {
-            const basename = data.extra.split(/[\\/]/).pop()
+        for (let i = 0; i < data.extra.length; i++) {
+          if (project.content.includes(data.extra[i])) {
+            const basename = data.extra[i].split(/[\\/]/).pop()
             await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
               Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
 
             project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
           }
-        } else {
-          for (let i = 0; i < data.extra.length; i++) {
-            if (project.content.includes(data.extra[i])) {
-              const basename = data.extra[i].split(/[\\/]/).pop()
-              await Drive.move(Helpers.publicPath(`projects/tmp/${basename}`),
-                Helpers.publicPath(`projects/${project.id}/extra/${basename}`))
-
-              project.content = project.content.replace(/\/tmp\//g, `/${project.id}/extra/`)
-            }
-          }
         }
       }
-
-      if (errors.length > 0) {
-        return response.status(401).json(errors)
-      }
-
-      let fields = ['title', 'illustration', 'draft', 'thumbnail', 'content', 'images', 'website', 'github']
-      fields.map(field => {
-        project[field] = data[field] || project[field]
-      })
-
-      await project.save()
-      await project.tags().detach()
-      await project.tags().attach(tags)
-      return response.status(200).json(project)
     }
+
+    if (errors.length > 0) {
+      return response.status(401).json(errors)
+    }
+
+    let fields = ['title', 'illustration', 'draft', 'thumbnail', 'content', 'images', 'website', 'repository']
+    fields.map(field => {
+      project[field] = data[field] || project[field]
+    })
+
+    await project.save()
+    await project.tags().detach()
+    await project.tags().attach(tags)
+    return response.status(200).json(project)
   }
 
   async upload ({request, response}) {

@@ -75,84 +75,69 @@ class UserController {
     if (!user) {
       return response.status(500).json('No user found, wtf.')
     } else {
-      const validation = await validate(request.all(), {
-        first_name: 'string|required',
-        last_name: 'string|required',
-        email: 'email|required',
-        birthday: 'string|required',
-        about_en: 'required',
-        about_fr: 'required',
-        job_title: 'string|required',
-        password: 'string|min:8'
+      const {first_name, last_name, email, birthday, extra_images, job_title, password} = request.all()
+      let {about_en, about_fr} = request.all()
+      const image = request.file('profile_pic', {
+        types: ['image'],
+        allowedExtensions: ['jpg', 'png', 'jpeg'],
+        size: '10mb'
       })
 
-      if (validation.fails()) {
-        return response.status(401).json(validation.messages())
-      } else {
-        const {first_name, last_name, email, birthday, extra_images, job_title, password} = request.all()
-        let {about_en, about_fr} = request.all()
-        const image = request.file('profile_pic', {
-          types: ['image'],
-          allowedExtensions: ['jpg', 'png', 'jpeg'],
-          size: '10mb'
+      if (image) {
+        await image.move(Helpers.publicPath('user'), {
+          overwrite: true
         })
-
-        if (image) {
-          await image.move(Helpers.publicPath('user'), {
-            overwrite: true
-          })
-          if (!image.moved()) {
-            return response.status(401).json(image.error())
-          } else {
-            profile_pic = `${Env.get('APP_URL')}/user/${image.clientName}`
-          }
-        } else if (!image && user.profile_pic.length === 0) {
-          return response.status(401).json([{message: 'Overlord needs an image.'}])
+        if (!image.moved()) {
+          return response.status(401).json(image.error())
+        } else {
+          profile_pic = `${Env.get('APP_URL')}/user/${image.clientName}`
         }
-
-        if (extra_images) {
-          if (extra_images.includes(',')) {
-            let images = []
-            extra_images.split(',').map(image => {
-              if (about_en.includes(image) || about_fr.includes(image)) {
-                images.push(image)
-              }
-            })
-            for (let i = 0; i < images.length; i++) {
-              if (!Drive.exists(Helpers.publicPath(`user/${images[i]}`))) {
-                await Drive.move(Helpers.publicPath('user/tmp'), Helpers.publicPath('user'), true)
-              }
-
-              about_fr = about_fr.replace(/tmp\//g, '')
-              about_en = about_en.replace(/tmp\//g, '')
-            }
-          } else {
-            if (about_fr.includes(extra_images) || about_en.includes(extra_images)) {
-              if (!Drive.exists(Helpers.publicPath(`user/${extra_images}`))) {
-                await Drive.move(Helpers.publicPath('user/tmp'), Helpers.publicPath('user'), true)
-              }
-
-              about_fr = about_fr.replace(/tmp\//g, '')
-              about_en = about_en.replace(/tmp\//g, '')
-              await Drive.delete('user/tmp')
-            }
-          }
-          await Drive.delete('user/tmp')
-        }
-
-        user.first_name = first_name || user.first_name
-        user.last_name = last_name || user.last_name
-        user.email = email || user.email
-        user.birthday = birthday || user.birthday
-        user.job_title = job_title || user.job_title
-        user.about_en = about_en || user.about_en
-        user.about_fr = about_fr || user.about_fr
-        user.profile_pic = profile_pic || user.profile_pic
-        user.password = password || user.password
-
-        await user.save()
-        return response.status(200).json(user)
+      } else if (!image && user.profile_pic.length === 0) {
+        return response.status(401).json([{message: 'Overlord needs an image.'}])
       }
+
+      if (extra_images) {
+        if (extra_images.includes(',')) {
+          let images = []
+          extra_images.split(',').map(image => {
+            if (about_en.includes(image) || about_fr.includes(image)) {
+              images.push(image)
+            }
+          })
+          for (let i = 0; i < images.length; i++) {
+            if (!Drive.exists(Helpers.publicPath(`user/${images[i]}`))) {
+              await Drive.move(Helpers.publicPath('user/tmp'), Helpers.publicPath('user'), true)
+            }
+
+            about_fr = about_fr.replace(/tmp\//g, '')
+            about_en = about_en.replace(/tmp\//g, '')
+          }
+        } else {
+          if (about_fr.includes(extra_images) || about_en.includes(extra_images)) {
+            if (!Drive.exists(Helpers.publicPath(`user/${extra_images}`))) {
+              await Drive.move(Helpers.publicPath('user/tmp'), Helpers.publicPath('user'), true)
+            }
+
+            about_fr = about_fr.replace(/tmp\//g, '')
+            about_en = about_en.replace(/tmp\//g, '')
+            await Drive.delete('user/tmp')
+          }
+        }
+        await Drive.delete('user/tmp')
+      }
+
+      user.first_name = first_name || user.first_name
+      user.last_name = last_name || user.last_name
+      user.email = email || user.email
+      user.birthday = birthday || user.birthday
+      user.job_title = job_title || user.job_title
+      user.about_en = about_en || user.about_en
+      user.about_fr = about_fr || user.about_fr
+      user.profile_pic = profile_pic || user.profile_pic
+      user.password = password || user.password
+
+      await user.save()
+      return response.status(200).json(user)
     }
   }
 
@@ -165,6 +150,8 @@ class UserController {
       email: 'required|email',
       password: 'required'
     }
+
+    console.log("password: " + await Hash.verify('password', '$2a$10$0LYhnakHCj.rk7WYf0W5X.jLYCNRbdOIxnPHND30IWUZj3C4HLjxe'))
 
     const {email, password} = request.only(['email', 'password'])
     const validation = await validate({ email, password }, rules)

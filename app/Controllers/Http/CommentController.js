@@ -31,32 +31,18 @@ class CommentController {
 
   async store ({ request, response }) {
     let data = request.all()
-    const validation = await validate(data,
-      {
-        name: 'required',
-        email: 'email|required',
-        comment: 'required',
-        reply: 'integer|required',
-        accepted: 'boolean|required',
-        post_id: 'integer|required'
-      })
-
-    if (validation.fails()) {
-      return response.status(401).json(validation.messages())
+    if (data.honey_pot) {
+      return response.status(401).json({error: 'I SAID GOOD DAY SIR'})
     } else {
-      if (data.honey_pot) {
-        return response.status(401).json({error: 'I SAID GOOD DAY SIR'})
-      } else {
-        delete data.honey_pot
-        const comment = await Comment.create(data)
-        await Mail.send('notifications.comment', comment, (message) => {
-          message
-            .from('noreply@josephlevarato.me', 'Overlord')
-            .to(user.email)
-            .subject('New comment on an article')
-        })
-        return response.status(201).json(comment)
-      }
+      delete data.honey_pot
+      const comment = await Comment.create(data)
+      await Mail.send('notifications.comment', comment, (message) => {
+        message
+          .from('noreply@josephlevarato.me', 'Overlord')
+          .to(user.email)
+          .subject('New comment on an article')
+      })
+      return response.status(201).json(comment)
     }
   }
 

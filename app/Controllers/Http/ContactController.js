@@ -1,7 +1,7 @@
 'use strict'
 
 const Contact = use('App/Models/Contact')
-const { validate, is, sanitize } = use('Validator')
+const { validate } = use('Validator')
 const Mail = use('Mail')
 
 class ContactController {
@@ -25,7 +25,7 @@ class ContactController {
   }
 
   async store ({request, response}) {
-    const validation = await validate(request.all(), {
+    /* const validation = await validate(request.all(), {
       name: 'string|required',
       object: 'string|required',
       email: 'email|required',
@@ -36,16 +36,17 @@ class ContactController {
     if (validation.fails()) {
       return response.status(401).json(validation.messages())
     } else {
-      const data = request.only(['name', 'object', 'email', 'message', 'read'])
-      await Contact.create(data)
-      await Mail.send('notifications.contact', data, (message) => {
+    */
+    const data = request.only(['name', 'object', 'email', 'message', 'read'])
+    await Contact.create(data)
+    /* await Mail.send('notifications.contact', data, (message) => {
         message
           .to('jlevarato@pm.me')
           .from('Overlord <overlord@jlevarato.me>')
           .subject('Someone contacted us')
-      })
-      return response.status(201).json('ok')
-    }
+      }) */
+    return response.status(201).json('ok')
+    // }
   }
 
   async read ({request, response}) {

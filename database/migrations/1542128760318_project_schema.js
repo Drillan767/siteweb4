@@ -14,7 +14,7 @@ class ProjectSchema extends Schema {
       table.text('content').notNullable()
       table.text('images')
       table.string('website')
-      table.string('github')
+      table.string('repository')
       table.string('slug', 150).notNullable().unique()
       table.timestamps()
     })
